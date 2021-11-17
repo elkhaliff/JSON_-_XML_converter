@@ -1,17 +1,26 @@
 package converter;
 
-import org.json.JSONObject;
-import org.json.XML;
-
+import java.io.File;
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String output = "";
-        String input = scanner.nextLine().trim();
+        File file = new File("d:\\test\\test1.txt");
+        StringBuilder sb = new StringBuilder();
+        try (
+            Scanner scanner = new Scanner(file);
+        ) {
+            while (scanner.hasNext()) {
+                sb.append(scanner.nextLine());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String output;
+        String input = sb.toString(); //scanner.nextLine().trim(); //.replace(" ", "")
         if (input.toCharArray()[0] == '<')
-            output = converToJSON(input);
+            output = convertToJSON(input);
         else
             output = convertToXML(input);
         System.out.println(output);
@@ -22,7 +31,7 @@ public class Main {
         return XML.toString(json);
     }
 
-    private static String converToJSON(String input) {
+    private static String convertToJSON(String input) {
         return XML.toJSONObject(input).toString().replace("\"\"", "null");
     }
 }
