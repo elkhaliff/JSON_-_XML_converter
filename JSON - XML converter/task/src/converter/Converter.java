@@ -1,14 +1,10 @@
 package converter;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class Converter {
 
-    private final Map<String, Object> tree = new LinkedHashMap<>();
-    protected final Map<String, Object> branch = new LinkedHashMap<>();
     protected final List<String> path = new ArrayList<>();
     private final List<Element> elements = new ArrayList<>();
     protected String keyAttributes;
@@ -21,39 +17,11 @@ public abstract class Converter {
     final protected int typeValue = 3;
     protected int parsType;
 
-    public void clear() {
-        parsType = typeEmpty;
-    }
-
-    protected void setData4LastKey(Object obj, boolean deleteKey) {
-        setData4LastKey(obj, null, deleteKey);
-    }
-
-    protected void setData4LastKey(Object obj, String prefix, boolean deleteKey) {
-        String pref = prefix == null ? "" : prefix;
-        if (path.size() > 0) {
-            int lastInd = path.size() - 1;
-            if (lastInd > 0) {
-                branch.put(pref + path.get(lastInd), obj);
-            } else
-                tree.put(path.get(lastInd), obj);
-            if (deleteKey)
-                path.remove(lastInd);
-        }
-    }
-
-    public Map<String, Object> getData(String input) {
+    public void getData(String input) {
         parser(input.trim());
-        return tree;
     }
 
-    protected StringBuilder saveValueAndClearSB(StringBuilder sb) {
-        String tmp = sb.toString().trim();
-        if (tmp.length() > 0) setData4LastKey(tmp, false);
-        return new StringBuilder();
-    }
-
-    public List getElements() {
+    public List<Element> getElements() {
         return elements;
     }
 
