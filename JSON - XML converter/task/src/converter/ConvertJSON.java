@@ -23,30 +23,30 @@ public class ConvertJSON extends Converter {
                         currPos += matcher.end();
                         String word = matcher.group().replaceAll("\"", "");
                         if (parsType == typeKey || parsType == typeEmpty) {
-                            keys.add(word);
+                            path.add(word);
                             clear();
-                        } else if (parsType == typeValue) {
-                            setData4LastKey(word);
+                        } else if (parsType == typeAttributeValue) {
+                            setData4LastKey(word, false);
                             clear();
                         }
                     }
                     break;
                 }
                 case ',': {
-                    if (parsType == typeValue) {
+                    if (parsType == typeAttributeValue) {
                         sb = saveValueAndClearSB(sb);
                     }
                     parsType = typeKey;
                     currPos++;
                     break; }
-                case ':': { parsType = typeValue; currPos++; break; }
+                case ':': { parsType = typeAttributeValue; currPos++; break; }
                 case '{': { parsType = typeKey; currPos++; break; }
                 case '}': {
-                    if (parsType == typeValue) {
+                    if (parsType == typeAttributeValue) {
                         sb = saveValueAndClearSB(sb);
                     }
                     Map<String, Object> out = new LinkedHashMap<>(branch);
-                    setData4LastKey(out);
+                    setData4LastKey(out, true);
                     branch.clear();
                     currPos++;
                     break;
@@ -54,7 +54,7 @@ public class ConvertJSON extends Converter {
                 case ' ':
                 case '\n': { currPos++; break; }
                 default: {
-                    if (parsType == typeValue) {
+                    if (parsType == typeAttributeValue) {
                         sb.append(input.charAt(currPos));
                         currPos++;
                         break;

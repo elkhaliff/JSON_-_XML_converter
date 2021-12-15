@@ -1,8 +1,6 @@
 package converter;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class BrokerXJ {
     final int dtXML = 0;
@@ -23,6 +21,13 @@ public class BrokerXJ {
 
     @Override
     public String toString() {
+        StringBuilder sb = new StringBuilder();
+        List<Element> elements = convertMethod.getElements();
+        for (Element elm: elements) {
+            sb.append(elm);
+            sb.append("\n");
+        }
+        /*
         StringBuilder sb = new StringBuilder();
         for (var entry: data.entrySet()) {
             Object value = entry.getValue();
@@ -79,6 +84,7 @@ public class BrokerXJ {
                 }
             }
         }
+         */
         return sb.toString();
     }
 

@@ -9,43 +9,37 @@ public abstract class Converter {
 
     private final Map<String, Object> tree = new LinkedHashMap<>();
     protected final Map<String, Object> branch = new LinkedHashMap<>();
-    protected final List<String> keys = new ArrayList<>();
+    protected final List<String> path = new ArrayList<>();
+    private final List<Element> elements = new ArrayList<>();
+    protected String keyAttributes;
 
     final protected int typeEmpty = -1;
     final protected int typeKey = 0;
-    final protected int typeValue = 1;
+    final protected int typeAttributeKey = 11;
+    final protected int typeAttributeValue = 12;
     final protected int typeEnd = 2;
-    final protected int typeParam = 3;
+    final protected int typeValue = 3;
     protected int parsType;
 
     public void clear() {
         parsType = typeEmpty;
     }
 
-    protected void setData4LastKey(Object obj) {
-        setData4LastKey(obj, null);
+    protected void setData4LastKey(Object obj, boolean deleteKey) {
+        setData4LastKey(obj, null, deleteKey);
     }
 
-    protected void setData4LastKey(Object obj, String prefix) {
+    protected void setData4LastKey(Object obj, String prefix, boolean deleteKey) {
         String pref = prefix == null ? "" : prefix;
-        if (keys.size() > 0) {
-            int lastInd = keys.size() - 1;
+        if (path.size() > 0) {
+            int lastInd = path.size() - 1;
             if (lastInd > 0) {
-                branch.put(pref + keys.get(lastInd), obj);
+                branch.put(pref + path.get(lastInd), obj);
             } else
-                tree.put(keys.get(lastInd), obj);
-            keys.remove(lastInd);
+                tree.put(path.get(lastInd), obj);
+            if (deleteKey)
+                path.remove(lastInd);
         }
-    }
-
-    protected void setAttributes(String parameter) {
-        int lastInd = keys.size() - 1;
-        if (lastInd >= 0) {
-            branch.put("#" + keys.get(lastInd), (parameter.length() == 0) ? "null" : parameter);
-        }
-        Map<String, Object> out = new LinkedHashMap<>(branch);
-        setData4LastKey(out);
-        branch.clear();
     }
 
     public Map<String, Object> getData(String input) {
@@ -55,14 +49,48 @@ public abstract class Converter {
 
     protected StringBuilder saveValueAndClearSB(StringBuilder sb) {
         String tmp = sb.toString().trim();
-        if (tmp.length() > 0) setData4LastKey(tmp);
+        if (tmp.length() > 0) setData4LastKey(tmp, false);
         return new StringBuilder();
     }
 
-    protected StringBuilder saveKeyAndClearSB(StringBuilder sb) {
-        String tmp = sb.toString().trim();
-        if (tmp.length() > 0) keys.add(tmp);
+    public List getElements() {
+        return elements;
+    }
+
+    private Element getLastElement() {
+        return elements.get(elements.size() - 1);
+    }
+
+    protected void setValue(String value) {
+        if (value.length() > 0) {
+            Element element = getLastElement();
+            element.setValue(value);
+        }
+    }
+
+    protected void setAttribute(String value) {
+        Element element = getLastElement();
+        element.addAttributes(keyAttributes, value);
+        keyAttributes = "";
+    }
+
+    public StringBuilder newElement(StringBuilder elementName) {
+        String name = elementName.toString().trim();
+        if (name.length() > 0) {
+            path.add(name);
+            elements.add(new Element(new ArrayList(path)));
+        }
         return new StringBuilder();
+    }
+
+    protected void addSub2Parent() {
+        if (elements.size() > 1) {
+            Element subElm = getLastElement();
+            elements.remove(elements.size() - 1);
+            path.remove(path.size() - 1);
+            Element parentElm = getLastElement();
+            parentElm.addSub(subElm);
+        }
     }
 
     protected abstract void parser(String input);

@@ -5,8 +5,8 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-//        File file = new File("d:\\test\\test.json");
-        File file = new File("test.txt");
+        File file = new File("d:\\test\\test.xml");
+//        File file = new File("test.txt");
         StringBuilder sb = new StringBuilder();
         try ( Scanner scanner = new Scanner(file) ) {
             while (scanner.hasNext())
@@ -16,6 +16,7 @@ public class Main {
         }
 
         String input = sb.toString().replaceAll("\\s+", " ");
+//        System.out.println(input);
 
         BrokerXJ broker = new BrokerXJ(input);
         broker.getData();
