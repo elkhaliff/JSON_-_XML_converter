@@ -59,6 +59,7 @@ public class Element {
             sb.append("\n");
             if (value != null && !value.equals("null")) {
                 sb.append(String.format("value = \"%s\"\n", value));
+
             } //else
 //            sb.append("value = null\n");
             if (attributes.size() > 0) {

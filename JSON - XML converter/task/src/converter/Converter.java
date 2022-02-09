@@ -6,7 +6,7 @@ import java.util.Map;
 
 public abstract class Converter {
 
-    protected final List<String> path = new ArrayList<>();
+    protected final List<String> pathElement = new ArrayList<>();
     private final List<Element> elements = new ArrayList<>();
     protected String keyAttributes;
 
@@ -47,7 +47,9 @@ public abstract class Converter {
             }
         } else {
             element.setBadSequenceStatus();
-            addBadSequenceElement(path.get(path.size() - 1), value);
+            if (pathElement.size() > 0) {
+                addBadSequenceElement(pathElement.get(pathElement.size() - 1), value);
+            }
         }
     }
     
@@ -66,19 +68,19 @@ public abstract class Converter {
     }
 
     public void newElement(String name) {
-        path.add(name);
-        elements.add(new Element(new ArrayList(path), name.trim().length() > 0));
+        pathElement.add(name);
+        elements.add(new Element(new ArrayList(pathElement), name.trim().length() > 0));
     }
 
     protected void absorbSubElement() {
-        if (path.size() > 1) {
+        if (pathElement.size() > 1) {
             Element subElm = getLastElement();
             elements.remove(elements.size() - 1);
             Element parentElm = getLastElement();
             parentElm.addSub(subElm);
         }
-        if (path.size() > 0)
-            path.remove(path.size() - 1);
+        if (pathElement.size() > 0)
+            pathElement.remove(pathElement.size() - 1);
 
     }
 
