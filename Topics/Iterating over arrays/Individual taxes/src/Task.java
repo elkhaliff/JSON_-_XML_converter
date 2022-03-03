@@ -1,7 +1,6 @@
-// write your answer here 
 import java.util.Scanner;
 
-public class Task {
+public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int countComp = scanner.nextInt();
