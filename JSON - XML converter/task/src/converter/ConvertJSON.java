@@ -31,6 +31,25 @@ public class ConvertJSON extends Converter {
 
         while (currPos < input.length()) {
             switch (input.charAt(currPos)) {
+                case 'n': { // null
+                    String curStr = input.substring(currPos, currPos+4);
+                    if (curStr.equals("null")){
+                        setValueByType(curStr);
+                        currPos += 4;
+                        break;
+                    }
+                }
+                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':{
+                    String curStr = input.substring(currPos);
+                    Pattern pattern = Pattern.compile("[\\d. ]*[,}]"); //, Pattern.CASE_INSENSITIVE
+                    Matcher matcher = pattern.matcher(curStr);
+                    if (matcher.find()) {
+                        String word = matcher.group().replaceAll("[,}]", "").trim();
+                        setValueByType(word);
+                        currPos += matcher.end() - 1;
+                        break;
+                    }
+                }
                 case '"': {
                     String curStr = input.substring(currPos);
                     Pattern pattern = Pattern.compile("\"[@ #.,\\w-']*\""); //, Pattern.CASE_INSENSITIVE
@@ -47,14 +66,14 @@ public class ConvertJSON extends Converter {
                                 } else {
                                     newElement(word);
                                 }
-                            } else if (parsType % 2 == 0) {
+                            } else if (parsType % 2 == 0) { // value's type
                                 setValueByType(word);
                             }
                     }
                     break;
                 }
                 case ',': {
-                    if (parsType % 2 == 0) { // for numbers or null - values without quotes
+                    if (parsType % 2 == 0) { // value's type // for numbers or null - values without quotes
                         setValueByType(sb.toString().trim());
                         sb = new StringBuilder();
                         absorbSubElement(); // SUB value
@@ -65,15 +84,18 @@ public class ConvertJSON extends Converter {
                     } else
                         parsType = typeKey;
                     currPos++;
-                    break; }
-                case ':': { if (parsType == typeKey || parsType == typeAttributeKey || parsType == typeParentKey)
-                                parsType +=1;
-                            currPos++;
-                            break;
-                    }
+                    break;
+                }
+                case ':': {
+                    //if (parsType == typeKey || parsType == typeAttributeKey || parsType == typeParentKey)
+                    if (parsType % 3 == 0) // key's type - typeKey, typeAttributeKey, typeParentKey
+                        parsType += 1; // value's type
+                    currPos++;
+                    break;
+                }
                 case '{': { parsType = typeKey; currPos++; break; }
                 case '}': {
-                    if (parsType % 2 == 0) { // all values (for numbers or null - values without quotes )
+                    if (parsType % 2 == 0) { // value's type  // (for numbers or null - values without quotes )
                         setValueByType(sb.toString().trim());
                         sb = new StringBuilder();
                     }
@@ -84,7 +106,7 @@ public class ConvertJSON extends Converter {
                 }
                 case ' ':
                 default: {
-                    if (parsType % 2 == 0) {
+                    if (parsType % 2 == 0) { // value's type
                         sb.append(input.charAt(currPos));
                     }
                     currPos++;

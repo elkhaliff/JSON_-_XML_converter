@@ -11,12 +11,12 @@ public abstract class Converter {
     protected String keyAttributes;
 
     final protected int typeEmpty = -1;
-    final protected int typeKey = 1;
-    final protected int typeValue = 2;
-    final protected int typeAttributeKey = 11;
-    final protected int typeAttributeValue = 12;
-    final protected int typeParentKey = 21;
-    final protected int typeParentValue = 22;
+    final protected int typeKey = 15;
+    final protected int typeValue = 16;
+    final protected int typeAttributeKey = 21;
+    final protected int typeAttributeValue = 22;
+    final protected int typeParentKey = 33;
+    final protected int typeParentValue = 34;
     final protected int typeEnd = 3;
     protected int parsType;
 
