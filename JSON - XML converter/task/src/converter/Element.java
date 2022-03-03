@@ -60,8 +60,8 @@ public class Element {
             if (value != null && !value.equals("null")) {
                 sb.append(String.format("value = \"%s\"\n", value));
 
-            } //else
-//            sb.append("value = null\n");
+            } else
+                sb.append("value = null\n");
             if (attributes.size() > 0) {
                 sb.append("attributes:\n");
                 for (var entry : attributes.entrySet()) {

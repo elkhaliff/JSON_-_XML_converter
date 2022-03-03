@@ -3,7 +3,7 @@ package converter;
 import java.io.File;
 import java.util.Scanner;
 
-// TODO: Это мой последний не законченный трек по java
+// TODO: Это мой крайний незаконченный трек по java
 
 public class Main {
     public static void main(String[] args) {
