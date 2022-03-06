@@ -7,8 +7,8 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        File file = new File("d:\\test\\test.json");
-//        File file = new File("test.txt");
+//        File file = new File("d:\\test\\test.json");
+        File file = new File("test.txt");
         StringBuilder sb = new StringBuilder();
         try ( Scanner scanner = new Scanner(file) ) {
             while (scanner.hasNext())
