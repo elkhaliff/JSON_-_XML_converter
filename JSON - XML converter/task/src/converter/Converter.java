@@ -38,7 +38,9 @@ public abstract class Converter {
         if (element.isHasAttributes()) { // bad for usual value
             element.setBadSequenceStatus();
             if (pathElement.size() > 0) { //parentKey.trim().length() > 0
-                addBadSequenceElement(parentKey, value);
+                absorbPointElement();
+                addBadSequenceElement(element.getName(), element.getValue());
+                addBadSequenceElement(element.getName(), value);
             }
         } else if (value.length() > 0 && element.isElemJsonStatusNotBab()) {
             element.setValue(value);
@@ -48,13 +50,15 @@ public abstract class Converter {
     protected void setParentValue(String parentKey, String value) {
         Element element = getLastElement();
         if (element.isElemJsonStatusNotBab()) {
-            if (parentKey.equals(element.getName()) && element.isHasAttributes()) {
+            if (parentKey.equals(element.getName()) &&
+                    !element.isElemJsonStatusBadSequence()/* && element.isHasAttributes()*/) {
                 if (value.length() > 0) {
                     element.setValue(value);
                 }
             } else {
                 element.setBadSequenceStatus();
                 if (pathElement.size() > 0) { //parentKey.trim().length() > 0
+                    absorbPointElement();
                     addBadSequenceElement(parentKey, value);
                 }
             }
@@ -68,9 +72,11 @@ public abstract class Converter {
     }
 
     protected void setAttribute(String value) {
+        Element element = getLastElement();
         if (attributesKey.trim().length() > 0 && getLastElement().isElemJsonStatusNotBab()) {
-            Element element = getLastElement();
             element.addAttributes(attributesKey, value);
+        } else {
+            element.setBadSequenceStatus();
         }
         attributesKey = "";
     }
@@ -78,10 +84,18 @@ public abstract class Converter {
     public void newElement(String name) {
         boolean parentStatus = true;
         if (elements.size() > 0) {
-            parentStatus = getLastElement().isElemJsonStatusNotBab();
+            Element element = getLastElement();
+            parentStatus = element.isElemJsonStatusNotBab();
+            if (element.isHasAttributes()) {
+                element.setBadSequenceStatus();
+                absorbPointElement();
+                addBadSequenceElement(element.getName(), element.getValue());
+                element.setValue("");
+            }
         }
         pathElement.add(name);
-        elements.add(new Element(new ArrayList(pathElement), name.trim().length() > 0 && parentStatus));
+        boolean statOK = parentStatus && name != null && name.trim().length() > 0;
+        elements.add(new Element(new ArrayList(pathElement), statOK));
     }
 
     protected void absorbSubElement() {
@@ -98,15 +112,15 @@ public abstract class Converter {
 
     protected void absorbPointElement() {
         Element element = getLastElement();
-        if (element.isHasAttributes()) {
-            absorbSubElement();
-        } else {
+        if (element.isElemJsonStatusBadSequence()) {
             Map<String, String> attrs = element.getAttributes();
+            element.clearAttributes();
             element.setBadSequenceStatus();
             for (var attrib : attrs.entrySet()) {
                 addBadSequenceElement(attrib.getKey(), attrib.getValue());
             }
-            element.clearAttributes();
+        } else {
+            absorbSubElement();
         }
     }
 
