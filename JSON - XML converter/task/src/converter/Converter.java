@@ -1,6 +1,7 @@
 package converter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -113,7 +114,7 @@ public abstract class Converter {
     protected void absorbPointElement() {
         Element element = getLastElement();
         if (element.isElemJsonStatusBadSequence()) {
-            Map<String, String> attrs = element.getAttributes();
+            Map<String, String> attrs = new LinkedHashMap<>(element.getAttributes());
             element.clearAttributes();
             element.setBadSequenceStatus();
             for (var attrib : attrs.entrySet()) {
