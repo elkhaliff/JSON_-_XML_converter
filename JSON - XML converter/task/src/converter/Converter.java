@@ -38,7 +38,7 @@ public abstract class Converter {
         Element element = getLastElement();
         if (element.isHasAttributes()) { // bad for usual value
             element.setBadSequenceStatus();
-            if (pathElement.size() > 0) { //parentKey.trim().length() > 0
+            if (pathElement.size() > 0) {
                 absorbPointElement();
                 addBadSequenceElement(element.getName(), element.getValue());
                 addBadSequenceElement(element.getName(), value);
@@ -52,7 +52,7 @@ public abstract class Converter {
         Element element = getLastElement();
         if (element.isElemJsonStatusNotBab()) {
             if (parentKey.equals(element.getName()) &&
-                    !element.isElemJsonStatusBadSequence()/* && element.isHasAttributes()*/) {
+                    !element.isElemJsonStatusBadSequence()) {
                 if (value.length() > 0) {
                     element.setValue(value);
                 }

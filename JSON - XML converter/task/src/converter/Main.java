@@ -3,11 +3,9 @@ package converter;
 import java.io.File;
 import java.util.Scanner;
 
-// TODO: законченно 4 задание трека
-
 public class Main {
     public static void main(String[] args) {
-//        File file = new File("d:\\test\\test.json");
+//        File file = new File("d:\\test\\test.xml");
         File file = new File("test.txt");
         StringBuilder sb = new StringBuilder();
         try ( Scanner scanner = new Scanner(file) ) {

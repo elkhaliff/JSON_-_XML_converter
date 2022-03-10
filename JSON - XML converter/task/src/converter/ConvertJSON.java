@@ -5,14 +5,6 @@ import java.util.regex.Pattern;
 
 public class ConvertJSON extends Converter {
 
-    //TODO: проверить почему схлопываются больше обьектов, чем нужно
-    // проверить обработку обьектов после аттрибутов (пересчет атрибутов)
-    // не парсятся не правильные атрибуты - см. первый пример inner8, inner9 и особенно inner12 (в последнем идет замена неправильных)
-    // не правильно парсится inner7 - по скольку там не должно быть атрибутов и это нормально
-    // возможно стоит пересмотреть метод addSub анализируя не возможность делать сабы, если есть атрибуты?? как для inner9 и inner12
-    // возможно стоит переделать вообще алгоритм разбора - только устанавливая бэдсиквенс, и только после
-    // в методе установки absorbSubElement() - проверять правильный ли элемент, и если нет раскидывать по сабам.
-
     private void setValueByType(String value) {
         if (parsType == typeValue) {
             setValue(value);
@@ -91,7 +83,6 @@ public class ConvertJSON extends Converter {
                     break;
                 }
                 case ':': {
-                    //if (parsType == typeKey || parsType == typeAttributeKey || parsType == typeParentKey)
                     if (parsType % 3 == 0) // key's type - typeKey, typeAttributeKey, typeParentKey
                         parsType += 1; // value's type
                     currPos++;
