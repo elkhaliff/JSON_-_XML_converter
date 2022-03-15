@@ -7,6 +7,9 @@ import java.util.Map;
 
 public abstract class Converter {
 
+    public static final int dtXML = 0;
+    public static final int dtJSON = 1;
+
     protected final List<String> pathElement = new ArrayList<>();
     private final List<Element> elements = new ArrayList<>();
     protected String attributesKey;

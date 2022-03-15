@@ -3,8 +3,6 @@ package converter;
 import java.util.*;
 
 public class BrokerXJ {
-    final int dtXML = 0;
-    final int dtJSON = 1;
     int dataType;
     String input;
     Converter convertMethod;
@@ -22,9 +20,13 @@ public class BrokerXJ {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         List<Element> elements = convertMethod.getElements();
+        if (elements.size() > 1 && dataType == Converter.dtJSON)
+            sb.append("<root>");
         for (Element elm: elements) {
-            sb.append(elm);
+            sb.append(elm.toString(dataType));
         }
+        if (elements.size() > 1 && dataType == Converter.dtJSON)
+            sb.append("\n</root>");
         return sb.toString();
     }
 
@@ -35,10 +37,10 @@ public class BrokerXJ {
     public void setMethod() {
         if (input.charAt(0) == '<') {
             convertMethod = new ConvertXML();
-            dataType = dtXML;
+            dataType = Converter.dtXML;
         } else {
             convertMethod = new ConvertJSON();
-            dataType = dtJSON;
+            dataType = Converter.dtJSON;
         }
     }
 }
