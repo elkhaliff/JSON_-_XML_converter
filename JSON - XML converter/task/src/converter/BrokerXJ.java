@@ -20,13 +20,19 @@ public class BrokerXJ {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         List<Element> elements = convertMethod.getElements();
-        if (elements.size() > 1 && dataType == Converter.dtJSON)
-            sb.append("<root>");
+        if (dataType == Converter.dtJSON) {
+            if (elements.size() > 1)
+                sb.append("<root>");
+        } else
+            sb.append("{");
         for (Element elm: elements) {
             sb.append(elm.toString(dataType));
         }
-        if (elements.size() > 1 && dataType == Converter.dtJSON)
-            sb.append("\n</root>");
+        if (dataType == Converter.dtJSON) {
+            if (elements.size() > 1)
+                sb.append("\n</root>");
+        } else
+                sb.append("\n}");
         return sb.toString();
     }
 

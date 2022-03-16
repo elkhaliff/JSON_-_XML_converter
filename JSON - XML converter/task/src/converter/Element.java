@@ -65,7 +65,7 @@ public class Element {
         if (isElemJsonStatusNotBab()) {
             switch (fromDataType) {
                 case Converter.dtXML: {
-
+                    /*
                     sb.append("Element:\n");
                     sb.append("path = ");
                     for (String val : path) {
@@ -91,15 +91,14 @@ public class Element {
                             sb.append(element.toString(fromDataType));
                         }
                     }
-
-                    /*
-                    sb.append("{\n");
+                    */
                     sb.append(String.format("\"%s\": ", getName()));
                     if (subElements.size() > 0) {
+                        sb.append("{\n");
                         for (Element element : subElements) {
-                            sb.append(element.toString(fromDataType));
-                            sb.append(",\n");
+                            sb.append(String.format("%s,\n", element.toString(fromDataType)));
                         }
+                        sb.append("}");
                     } else {
                         if (attributes.size() > 0) {
                             sb.append("{\n");
@@ -109,12 +108,11 @@ public class Element {
                             sb.append(String.format("\"#%s\": \"%s\"\n", getName(), value));
                             sb.append("}");
                         } else {
-                            sb.append(String.format("\"%s\"\n", value));
-                            sb.append("}");
+                            sb.append(String.format("\"%s\"", value));
+//                            sb.append("}");
                         }
                     }
-                    sb.append("}");
-                    */
+//                    sb.append("}");
                     break;
                 }
                 case Converter.dtJSON: {
