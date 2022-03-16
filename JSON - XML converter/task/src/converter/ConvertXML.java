@@ -7,6 +7,8 @@ public class ConvertXML extends Converter {
 
     @Override
     protected void parser(String input) {
+        dataType = dtXML;
+
         String parameter = "";
         StringBuilder sb = new StringBuilder();
         int currPos = 0;

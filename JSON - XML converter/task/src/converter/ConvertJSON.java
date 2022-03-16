@@ -20,6 +20,8 @@ public class ConvertJSON extends Converter {
 
     @Override
     protected void parser(String input) {
+        dataType = dtJSON;
+
         StringBuilder sbAccumulator = new StringBuilder();
         int currPos = 0;
         parsType = typeEmpty;

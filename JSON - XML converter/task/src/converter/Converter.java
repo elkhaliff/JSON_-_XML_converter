@@ -25,6 +25,8 @@ public abstract class Converter {
     final protected int typeEnd = 3;
     protected int parsType;
 
+    protected int dataType;
+
     public void getData(String input) {
         parser(input.trim());
     }
@@ -39,7 +41,7 @@ public abstract class Converter {
 
     protected void setValue(String value) {
         Element element = getLastElement();
-        if (element.isHasAttributes()) { // bad for usual value
+        if (dataType != dtXML && element.isHasAttributes()) { // bad for usual value
             element.setBadSequenceStatus();
             if (pathElement.size() > 0) {
                 absorbPointElement();
@@ -77,7 +79,7 @@ public abstract class Converter {
 
     protected void setAttribute(String value) {
         Element element = getLastElement();
-        if (attributesKey.trim().length() > 0 && getLastElement().isElemJsonStatusNotBab()) {
+        if (attributesKey.trim().length() > 0 && element.isElemJsonStatusNotBab()) {
             element.addAttributes(attributesKey, value);
         } else {
             element.setBadSequenceStatus();
@@ -99,7 +101,7 @@ public abstract class Converter {
         }
         pathElement.add(name);
         boolean statOK = parentStatus && name != null && name.trim().length() > 0;
-        elements.add(new Element(new ArrayList(pathElement), statOK));
+        elements.add(new Element(dataType, new ArrayList(pathElement), statOK));
     }
 
     protected void absorbSubElement() {

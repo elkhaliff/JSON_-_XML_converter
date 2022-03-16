@@ -13,6 +13,7 @@ public class Element {
     private String value;
     private List<Element> subElements = new ArrayList<>();
 
+    protected int dataType;
 
     final private int statOK = 0;
     final private int statBadElement = 1;
@@ -20,17 +21,18 @@ public class Element {
 
     protected int jsonStatus;
 
-    public Element(List<String> path, boolean isElementOK) {
+    public Element(int dataType, List<String> path, boolean isElementOK) {
         value = "";
         this.path = path;
+        this.dataType = dataType;
         jsonStatus = isElementOK ? statOK : statBadElement;
     }
 
-    public boolean isElemJsonStatusOK() { return jsonStatus == statOK; }
+//    public boolean isElemJsonStatusOK() { return jsonStatus == statOK; }
 
-    public boolean isElemJsonStatusNotBab() { return jsonStatus != statBadElement; }
+    public boolean isElemJsonStatusNotBab() { return dataType == dtXML ? true : jsonStatus != statBadElement; }
 
-    public boolean isElemJsonStatusBadSequence() { return jsonStatus == statBadSequence; }
+    public boolean isElemJsonStatusBadSequence() { return dataType == dtXML ? true : jsonStatus == statBadSequence; }
 
     public void setBadSequenceStatus() {
         jsonStatus = statBadSequence;
@@ -63,32 +65,7 @@ public class Element {
         if (isElemJsonStatusNotBab()) {
             switch (fromDataType) {
                 case Converter.dtXML: {
-                    sb.append("{\n");
-                    sb.append(String.format("\"%s\": ", getName()));
-                    if (subElements.size() > 0) {
-                        for (Element element : subElements) {
-                            sb.append(element.toString(fromDataType));
-                            sb.append(",\n");
-                        }
-                    } else {
-                        if (attributes.size() > 0) {
-                            sb.append("{\n");
-                            for (var entry : attributes.entrySet()) {
-                                sb.append(String.format("\"@%s\": \"%s\",\n", entry.getKey(), entry.getValue()));
-                            }
-                            sb.append(String.format("\"#%s\": \"%s\"\n", getName(), value));
-                            sb.append("}");
-                        } else {
-                            sb.append(String.format("\"%s\"\n", value));
-                            sb.append("}");
-                        }
-                    }
-                    sb.append("}");
 
-                    break;
-                }
-                case Converter.dtJSON: {
-                    /*
                     sb.append("Element:\n");
                     sb.append("path = ");
                     for (String val : path) {
@@ -114,7 +91,33 @@ public class Element {
                             sb.append(element.toString(fromDataType));
                         }
                     }
+
+                    /*
+                    sb.append("{\n");
+                    sb.append(String.format("\"%s\": ", getName()));
+                    if (subElements.size() > 0) {
+                        for (Element element : subElements) {
+                            sb.append(element.toString(fromDataType));
+                            sb.append(",\n");
+                        }
+                    } else {
+                        if (attributes.size() > 0) {
+                            sb.append("{\n");
+                            for (var entry : attributes.entrySet()) {
+                                sb.append(String.format("\"@%s\": \"%s\",\n", entry.getKey(), entry.getValue()));
+                            }
+                            sb.append(String.format("\"#%s\": \"%s\"\n", getName(), value));
+                            sb.append("}");
+                        } else {
+                            sb.append(String.format("\"%s\"\n", value));
+                            sb.append("}");
+                        }
+                    }
+                    sb.append("}");
                     */
+                    break;
+                }
+                case Converter.dtJSON: {
                     sb.append(String.format("\n<%s", getName()));
                     if (subElements.size() > 0) {
                         sb.append(">");
