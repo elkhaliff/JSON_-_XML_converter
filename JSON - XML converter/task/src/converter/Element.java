@@ -80,25 +80,37 @@ public class Element {
             switch (dataType) {
                 case Converter.dtXML: {
                     sb.append(String.format("\"%s\": ", getName()));
-                    if (!subElements.isEmpty()) {
+
+                    if (!attributes.isEmpty()) {
                         sb.append("{\n");
-                        for (int e = 0; e < subElements.size(); e++) {
-                            sb.append(String.format("%s", subElements.get(e).toString()));
-                            if (e < subElements.size() - 1)
-                                sb.append(",");
-                            sb.append("\n");
+                        for (var attr : attributes.entrySet()) {
+                            sb.append(String.format("\"@%s\": ", attr.getKey()))
+                                    .append(String.format("%s,\n", attr.getValue() == null ? "null" : String.format("\"%s\"", attr.getValue())));
+                        }
+                        sb.append(String.format("\"#%s\": ", getName()));
+                        if (!subElements.isEmpty()) {
+                            sb.append("{\n");
+                            for (int e = 0; e < subElements.size(); e++) {
+                                sb.append(String.format("%s", subElements.get(e).toString()));
+                                if (e < subElements.size() - 1)
+                                    sb.append(",");
+                                sb.append("\n");
+                            }
+                            sb.append("}\n");
+                        } else {
+                            sb.append(String.format("%s\n", value == null ? "null" : String.format("\"%s\"", value)));
                         }
                         sb.append("}");
                     } else {
-                        if (!attributes.isEmpty()) {
+                        if (!subElements.isEmpty()) {
                             sb.append("{\n");
-                            for (var attr : attributes.entrySet()) {
-                                sb.append(String.format("\"@%s\": ", attr.getKey()))
-                                  .append(String.format("%s,\n", attr.getValue() == null ? "null" : String.format("\"%s\"", attr.getValue())));
+                            for (int e = 0; e < subElements.size(); e++) {
+                                sb.append(String.format("%s", subElements.get(e).toString()));
+                                if (e < subElements.size() - 1)
+                                    sb.append(",");
+                                sb.append("\n");
                             }
-                            sb.append(String.format("\"#%s\": ", getName()))
-                              .append(String.format("%s\n", value == null ? "null" : String.format("\"%s\"", value)))
-                              .append("}");
+                            sb.append("}");
                         } else {
                             sb.append(String.format("%s", value == null ? "null" : String.format("\"%s\"", value)));
                         }

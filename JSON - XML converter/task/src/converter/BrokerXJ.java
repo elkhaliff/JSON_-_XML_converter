@@ -22,7 +22,7 @@ public class BrokerXJ {
         if (dataType == Converter.dtJSON) {
             if (addRoot) sb.append("<root>");
         } else sb.append("{\n");
-        sb.append(element.toString());
+        sb.append(element);
         if (dataType == Converter.dtJSON) {
             if (addRoot) sb.append("\n</root>");
         } else sb.append("\n}");
