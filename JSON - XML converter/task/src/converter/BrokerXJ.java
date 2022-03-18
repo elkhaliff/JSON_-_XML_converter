@@ -25,14 +25,16 @@ public class BrokerXJ {
                 sb.append("<root>");
         } else
             sb.append("{");
+
         for (Element elm: elements) {
-            sb.append(elm.toString(dataType));
+            sb.append(elm.toString());
         }
+
         if (dataType == Converter.dtJSON) {
             if (elements.size() > 1)
                 sb.append("\n</root>");
         } else
-                sb.append("\n}");
+            sb.append("\n}");
         return sb.toString();
     }
 

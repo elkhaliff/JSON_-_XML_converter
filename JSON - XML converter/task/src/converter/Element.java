@@ -60,10 +60,11 @@ public class Element {
 
     public String getName() { return path.get(path.size() - 1); }
 
-    public String toString(int fromDataType) {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder("");
         if (isElemJsonStatusNotBab()) {
-            switch (fromDataType) {
+            switch (dataType) {
                 case Converter.dtXML: {
                     /*
                     sb.append("Element:\n");
@@ -96,7 +97,7 @@ public class Element {
                     if (subElements.size() > 0) {
                         sb.append("{\n");
                         for (Element element : subElements) {
-                            sb.append(String.format("%s,\n", element.toString(fromDataType)));
+                            sb.append(String.format("%s,\n", element.toString()));
                         }
                         sb.append("}");
                     } else {
@@ -120,7 +121,7 @@ public class Element {
                     if (subElements.size() > 0) {
                         sb.append(">");
                         for (Element element : subElements) {
-                            sb.append(element.toString(fromDataType));
+                            sb.append(element.toString());
                         }
                         sb.append(String.format("\n</%s>", getName()));
                     } else {
