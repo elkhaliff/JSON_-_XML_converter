@@ -4,82 +4,65 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ConvertXML extends Converter {
+    private static final Pattern PATTERN_XML_BEGIN = Pattern.compile("(?s)\\A\\s*<\\s*[a-z_]\\w+");
+    private static final Pattern PATTERN_OPEN_TAG = Pattern.compile("(?is)\\s*<\\s*([a-z_]\\w+)\\s*([a-z_]\\w+\\s*=\\s*\".*?\")*\\s*(>|/>)");
+    private static final Pattern PATTERN_ATTRIBUTE = Pattern.compile("(?is)([a-z_]\\w+)\\s*=\\s*\"(.*?)\"");
 
     @Override
-    protected void parser(String input) {
+    protected Element parser(String input) {
         dataType = dtXML;
-
-        String parameter = "";
-        StringBuilder sb = new StringBuilder();
-        int currPos = 0;
-
-        while (currPos < input.length()) {
-            switch (input.charAt(currPos)) {
-                case '<' : {
-                    if (parsType == typeValue) {
-                        parameter = sb.toString().trim();
-                        sb = new StringBuilder();
-                    }
-                    parsType = typeKey;
-                    currPos++;
-                    break;
-                }
-                case '"' : {
-                    String curStr = input.substring(currPos);
-                    Pattern pattern = Pattern.compile("\"[.,\\w]*\"");
-                    Matcher matcher = pattern.matcher(curStr);
-                    if (matcher.find()) {
-                        currPos += matcher.end();
-                        String word = matcher.group().replaceAll("\"", "");
-                        if (parsType == typeAttributeValue) {
-                            setAttribute(word);
-                            parsType = typeAttributeKey;
-                        }
-                    }
-                    break;
-                }
-                case '='  : {
-                    if (parsType == typeAttributeKey) {
-                        attributesKey = sb.toString().trim();
-                        sb = new StringBuilder();
-                    }
-                    parsType = typeAttributeValue;
-                    currPos++;
-                    break;
-                }
-                case '/'  : { parsType = typeEnd; currPos++; break; }
-                case '>'  :
-                case ' '  : {
-                    if (parsType == typeValue) {
-                        sb.append(input.charAt(currPos));
-                    } else {
-                        if (parsType == typeKey) {
-                            newElement(sb.toString().trim());
-                            sb = new StringBuilder();
-                            parsType = typeAttributeKey;
-                        } else if (parsType == typeEnd) {
-                            sb = new StringBuilder();
-                            if (parameter.length() > 0) {
-                                setValue(parameter);
-                                parameter = "";
-                            }
-                            absorbSubElement();
-                            parsType = typeEmpty;
-                        } else if (parsType == typeValue) {
-                            sb.append(input.charAt(currPos));
-                        }
-                        if (input.charAt(currPos) == '>' && parsType != typeEnd) parsType = typeValue;
-                    }
-                    currPos++;
-                    break;
-                }
-                default : {
-                    sb.append(input.charAt(currPos));
-                    currPos++;
-                    break;
-                }
-            }
-        }
+        Element root = new Element(dataType);
+        parsElements(input, root, 0);
+        return root;
     }
 
+    private int parsElements(String input, Element parent, int position) {
+        Matcher tagMatcher = PATTERN_OPEN_TAG.matcher(input);
+        Matcher attrMatcher;
+        Matcher closeTagMatcher;
+        Element element;
+
+        int i = position;
+        while (tagMatcher.find(i)) {
+            element = parent.addSub(tagMatcher.group(1));
+
+            if (tagMatcher.group(2) != null) {
+                attrMatcher = PATTERN_ATTRIBUTE.matcher(tagMatcher.group(2));
+                while (attrMatcher.find()) {
+                    element.setAttribute(attrMatcher.group(1), attrMatcher.group(2));
+                }
+            }
+
+            i = tagMatcher.end();
+            if (">".equals(tagMatcher.group(3))) {
+                closeTagMatcher = Pattern
+                        .compile(String.format("(?s)(.*?)<\\s*\\/%s\\s*>", element.getName()))
+                        .matcher(input);
+
+                if (!closeTagMatcher.find(i)) {
+                    throw new RuntimeException("Enclosing tag expected.");
+                }
+
+                if (isXml(input, i)) {
+                    i = parsElements(input, element, i);
+                }
+
+                if (!element.hasSub()) {
+                    element.setValue(closeTagMatcher.group(1));
+                }
+
+                i = closeTagMatcher.end();
+            }
+        }
+
+        return i;
+    }
+
+    public static boolean isXml(String input) {
+        return isXml(input, 0);
+    }
+
+    private static boolean isXml(String input, int position) {
+        return PATTERN_XML_BEGIN.matcher(input.substring(position)).find();
+    }
 }

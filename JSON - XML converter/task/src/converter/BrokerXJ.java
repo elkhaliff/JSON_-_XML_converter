@@ -1,7 +1,5 @@
 package converter;
 
-import java.util.*;
-
 public class BrokerXJ {
     int dataType;
     String input;
@@ -19,22 +17,15 @@ public class BrokerXJ {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        List<Element> elements = convertMethod.getElements();
+        Element element = convertMethod.getRoot();
+        boolean addRoot = element.getSubMap().size() > 1;
         if (dataType == Converter.dtJSON) {
-            if (elements.size() > 1)
-                sb.append("<root>");
-        } else
-            sb.append("{");
-
-        for (Element elm: elements) {
-            sb.append(elm.toString());
-        }
-
+            if (addRoot) sb.append("<root>");
+        } else sb.append("{\n");
+        sb.append(element.toString());
         if (dataType == Converter.dtJSON) {
-            if (elements.size() > 1)
-                sb.append("\n</root>");
-        } else
-            sb.append("\n}");
+            if (addRoot) sb.append("\n</root>");
+        } else sb.append("\n}");
         return sb.toString();
     }
 
@@ -43,10 +34,10 @@ public class BrokerXJ {
     }
 
     public void setMethod() {
-        if (input.charAt(0) == '<') {
+        if (ConvertXML.isXml(input)) {
             convertMethod = new ConvertXML();
             dataType = Converter.dtXML;
-        } else {
+        } else if (ConvertJSON.isJson(input)) {
             convertMethod = new ConvertJSON();
             dataType = Converter.dtJSON;
         }

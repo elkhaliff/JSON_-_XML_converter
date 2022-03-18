@@ -5,145 +5,142 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static converter.Converter.*;
-
 public class Element {
-    private final List<String> path;
-    private final Map<String, String> attributes = new LinkedHashMap<>();
+    private String name;
     private String value;
-    private List<Element> subElements = new ArrayList<>();
+    private final int dataType;
 
-    protected int dataType;
 
-    final private int statOK = 0;
-    final private int statBadElement = 1;
-    final private int statBadSequence = 2;
+    private final Map<String, String> attributes = new LinkedHashMap<>();
+    private final List<Element> subElements = new ArrayList<>();
 
-    protected int jsonStatus;
+    public Element(int dataType) {
+        this(dataType, null);
+    }
 
-    public Element(int dataType, List<String> path, boolean isElementOK) {
-        value = "";
-        this.path = path;
+    public Element(int dataType, String name) {
         this.dataType = dataType;
-        jsonStatus = isElementOK ? statOK : statBadElement;
+        this.name = name;
     }
 
-//    public boolean isElemJsonStatusOK() { return jsonStatus == statOK; }
-
-    public boolean isElemJsonStatusNotBab() { return dataType == dtXML ? true : jsonStatus != statBadElement; }
-
-    public boolean isElemJsonStatusBadSequence() { return dataType == dtXML ? true : jsonStatus == statBadSequence; }
-
-    public void setBadSequenceStatus() {
-        jsonStatus = statBadSequence;
+    public String getName() {
+        return name;
     }
 
-    public boolean isHasAttributes() {
-        return attributes.size() > 0;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void addAttributes(String key, String value) {
+    public void setAttribute(String key, String value) {
         attributes.put(key, value);
     }
 
-    public Map getAttributes() { return attributes; }
-
-    public void clearAttributes() { attributes.clear(); }
-
-    public void setValue(String value) { this.value = value; }
-
-    public String getValue() { return value; }
-
-    public void addSub(Element element) {
-        subElements.add(element);
+    public String getValue() {
+        return value;
     }
 
-    public String getName() { return path.get(path.size() - 1); }
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public Element addSub(String name) {
+        return addSub(new Element(dataType, name));
+    }
+
+    public Element addSub(Element subElement) {
+        subElements.add(subElement);
+        return subElement;
+    }
+
+    public Element removeSub(Element element) {
+        int i = subElements.indexOf(element);
+        if (i < 0) {
+            return null;
+        }
+        return subElements.remove(i);
+    }
+
+    public boolean hasSub() {
+        return !subElements.isEmpty();
+    }
+
+    public Map<String, Element> getSubMap() {
+        Map<String, Element> map = new LinkedHashMap<>();
+        for (Element element : subElements) {
+            map.put(element.getName(), element);
+        }
+        return map;
+    }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("");
-        if (isElemJsonStatusNotBab()) {
+        StringBuilder sb = new StringBuilder();
+
+        if (getName() != null) {
             switch (dataType) {
                 case Converter.dtXML: {
-                    /*
-                    sb.append("Element:\n");
-                    sb.append("path = ");
-                    for (String val : path) {
-                        sb.append(String.format("%s, ", val));
-                    }
-                    sb.delete(sb.length() - 2, sb.length());
-                    sb.append("\n");
-                    if (value.equals("null")) {
-                        sb.append("value = null\n");
-                        //} else if (value != null ) {
-                    } else if (value.length() > 0 ) {
-                        sb.append(String.format("value = \"%s\"\n", value));
-                    }
-                    if (attributes.size() > 0) {
-                        sb.append("attributes:\n");
-                        for (var entry : attributes.entrySet()) {
-                            sb.append(String.format("%s = \"%s\"\n", entry.getKey(), entry.getValue()));
-                        }
-                    }
-                    sb.append("\n");
-                    if (subElements.size() > 0) {
-                        for (Element element : subElements) {
-                            sb.append(element.toString(fromDataType));
-                        }
-                    }
-                    */
                     sb.append(String.format("\"%s\": ", getName()));
-                    if (subElements.size() > 0) {
+                    if (!subElements.isEmpty()) {
                         sb.append("{\n");
-                        for (Element element : subElements) {
-                            sb.append(String.format("%s,\n", element.toString()));
+                        for (int e = 0; e < subElements.size(); e++) {
+                            sb.append(String.format("%s", subElements.get(e).toString()));
+                            if (e < subElements.size() - 1)
+                                sb.append(",");
+                            sb.append("\n");
                         }
                         sb.append("}");
                     } else {
-                        if (attributes.size() > 0) {
+                        if (!attributes.isEmpty()) {
                             sb.append("{\n");
-                            for (var entry : attributes.entrySet()) {
-                                sb.append(String.format("\"@%s\": \"%s\",\n", entry.getKey(), entry.getValue()));
+                            for (var attr : attributes.entrySet()) {
+                                sb.append(String.format("\"@%s\": ", attr.getKey()))
+                                  .append(String.format("%s,\n", attr.getValue() == null ? "null" : String.format("\"%s\"", attr.getValue())));
                             }
-                            sb.append(String.format("\"#%s\": \"%s\"\n", getName(), value));
-                            sb.append("}");
+                            sb.append(String.format("\"#%s\": ", getName()))
+                              .append(String.format("%s\n", value == null ? "null" : String.format("\"%s\"", value)))
+                              .append("}");
                         } else {
-                            sb.append(String.format("\"%s\"", value));
-//                            sb.append("}");
+                            sb.append(String.format("%s", value == null ? "null" : String.format("\"%s\"", value)));
                         }
                     }
-//                    sb.append("}");
                     break;
                 }
                 case Converter.dtJSON: {
                     sb.append(String.format("\n<%s", getName()));
-                    if (subElements.size() > 0) {
+
+                    if (!attributes.isEmpty()) {
+                        for (var attr : attributes.entrySet()) {
+                            sb.append(String.format(" %s=\"%s\"", attr.getKey(), attr.getValue() == null ? "" : attr.getValue()));
+                        }
+                    }
+
+                    if (!subElements.isEmpty()) {
                         sb.append(">");
                         for (Element element : subElements) {
                             sb.append(element.toString());
                         }
                         sb.append(String.format("\n</%s>", getName()));
                     } else {
-                        if (attributes.size() > 0) {
-                            for (var entry : attributes.entrySet()) {
-                                sb.append(String.format(" %s=\"%s\"", entry.getKey(), entry.getValue()));
-                            }
-                        }
-                        if (value.equals("null") || value.length() == 0)
+                        if (value == null)
                             sb.append(" />");
                         else {
                             sb.append(">");
-                            sb.append(String.format("%s", value));
-                            sb.append(String.format("</%s>", getName()));
+                            sb.append(String.format("%s", value))
+                              .append(String.format("</%s>", getName()));
                         }
                     }
                     break;
                 }
-                default: sb.append("");
+                default: {
+                    break;
+                }
             }
-            return sb.toString();
-        } else
-            return "";
+        } else {
+            for (Element element : subElements) {
+                sb.append(element.toString());
+            }
+        }
+
+        return sb.toString();
     }
 }
