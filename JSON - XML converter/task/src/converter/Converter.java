@@ -13,9 +13,13 @@ public abstract class Converter {
         return root;
     }
 
-    public void getData(String input) {
+    public void parsData(String input) {
         root = parser(input.trim());
     }
 
     protected abstract Element parser(String input);
+
+    protected abstract boolean check(String src);
+
+    protected abstract String print(Element element);
 }

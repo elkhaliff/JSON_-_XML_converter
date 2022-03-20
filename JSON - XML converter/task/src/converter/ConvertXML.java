@@ -1,68 +1,95 @@
 package converter;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ConvertXML extends Converter {
-    private static final Pattern PATTERN_XML_BEGIN = Pattern.compile("(?s)\\A\\s*<\\s*[a-z_]\\w+");
-    private static final Pattern PATTERN_OPEN_TAG = Pattern.compile("(?is)\\s*<\\s*([a-z_]\\w+)\\s*([a-z_]\\w+\\s*=\\s*\".*?\")*\\s*(>|/>)");
-    private static final Pattern PATTERN_ATTRIBUTE = Pattern.compile("(?is)([a-z_]\\w+)\\s*=\\s*\"(.*?)\"");
+    private static final Pattern XML_BEGIN = Pattern.compile("(?s)\\A\\s*<\\s*[a-z_]\\w+");
+    private static final Pattern TAG_OPEN = Pattern.compile("(?is)^\\s*<\\s*([a-z_]\\w+)\\s*([a-z_]\\w+\\s*=\\s*\".*?\")*\\s*(>|/>)");
+    private static final Pattern ATTRIBUTES = Pattern.compile("(?is)([a-z_]\\w+)\\s*=\\s*\"(.*?)\"");
+
+    @Override
+    public boolean check(String input) {
+        return XML_BEGIN.matcher(input).find();
+    }
 
     @Override
     protected Element parser(String input) {
-        dataType = dtXML;
-        Element root = new Element(dataType);
-        parsElements(input, root, 0);
-        return root;
+        return parsElements(new Finder(input), new Element());
     }
 
-    private int parsElements(String input, Element parent, int position) {
-        Matcher tagMatcher = PATTERN_OPEN_TAG.matcher(input);
-        Matcher attrMatcher;
-        Matcher closeTagMatcher;
+    private Element parsElements(Finder finder, Element parent) {
         Element element;
+        Matcher matcher;
+        while (finder.next(TAG_OPEN)) {
+            matcher = finder.getMatcher();
+            element = parent.addSub(matcher.group(1));
+            parsAttributes(matcher.group(2), element);
 
-        int i = position;
-        while (tagMatcher.find(i)) {
-            element = parent.addSub(tagMatcher.group(1));
-
-            if (tagMatcher.group(2) != null) {
-                attrMatcher = PATTERN_ATTRIBUTE.matcher(tagMatcher.group(2));
-                while (attrMatcher.find()) {
-                    element.setAttribute(attrMatcher.group(1), attrMatcher.group(2));
+            if (">".equals(matcher.group(3))) {
+                if (finder.check(XML_BEGIN)) {
+                    parsElements(finder, element);
                 }
-            }
-
-            i = tagMatcher.end();
-            if (">".equals(tagMatcher.group(3))) {
-                closeTagMatcher = Pattern
-                        .compile(String.format("(?s)(.*?)<\\s*\\/%s\\s*>", element.getName()))
-                        .matcher(input);
-
-                if (!closeTagMatcher.find(i)) {
+                if (!finder.next(String.format("(?s)^(.*?)<\\s*\\/%s\\s*>", element.getName()))) {
                     throw new RuntimeException("Enclosing tag expected.");
                 }
-
-                if (isXml(input, i)) {
-                    i = parsElements(input, element, i);
-                }
-
                 if (!element.hasSub()) {
-                    element.setValue(closeTagMatcher.group(1));
+                    element.setValue(finder.getMatcher().group(1));
                 }
-
-                i = closeTagMatcher.end();
             }
         }
-
-        return i;
+        return parent;
     }
 
-    public static boolean isXml(String input) {
-        return isXml(input, 0);
+    private static void parsAttributes(String src, Element element) {
+        if (src == null) {
+            return;
+        }
+        Matcher matcher;
+        Finder finder = new Finder(src);
+        while (finder.next(ATTRIBUTES)) {
+            matcher = finder.getMatcher();
+            element.setAttribute(matcher.group(1), matcher.group(2));
+        }
     }
 
-    private static boolean isXml(String input, int position) {
-        return PATTERN_XML_BEGIN.matcher(input.substring(position)).find();
+    @Override
+    public String print(Element element) {
+        return printElement(new StringBuilder(), element).toString();
+    }
+
+    private static StringBuilder printElement(StringBuilder out, Element element) {
+        String nodeName = element.getName();
+        if (nodeName == null) {
+            if (element.getSubElements().size() > 1) {
+                out.append("<root>\n");
+            }
+            for (Element sub : element.getSubElements()) {
+                printElement(out, sub);
+            }
+            if (element.getSubElements().size() > 1) {
+                out.append("</root>\n");
+            }
+            return out;
+        }
+        out.append(String.format("<%s", nodeName));
+        for (Map.Entry<String, String> elem: element.getAttributes().entrySet()) {
+            out.append(String.format(" %s = \"%s\"", elem.getKey(), elem.getValue() == null ? "" : elem.getValue()));
+        }
+        if (element.hasSub()) {
+            out.append(">\n");
+            for (Element sub : element.getSubElements()) {
+                printElement(out, sub);
+            }
+            out.append(String.format("</%s>\n", nodeName));
+        } else if (element.getValue() == null) {
+            out.append("/>\n");
+        } else {
+            out.append(">");
+            out.append(element.getValue());
+            out.append(String.format("</%s>\n", nodeName));
+        }
+        return out;
     }
 }
