@@ -16,7 +16,9 @@ public class ConvertXML extends Converter {
 
     @Override
     protected Element parser(String input) {
-        return parsElements(new Finder(input), new Element());
+        Finder finder = new Finder(input);
+        // проверка и пропуск начальных служебных тэгов <?...?>
+        return parsElements(finder, new Element());
     }
 
     private Element parsElements(Finder finder, Element parent) {
@@ -60,8 +62,8 @@ public class ConvertXML extends Converter {
     }
 
     private static StringBuilder printElement(StringBuilder out, Element element) {
-        String nodeName = element.getName();
-        if (nodeName == null) {
+        String elementName = element.getName();
+        if (elementName == null) {
             if (element.getSubElements().size() > 1) {
                 out.append("<root>\n");
             }
@@ -73,7 +75,7 @@ public class ConvertXML extends Converter {
             }
             return out;
         }
-        out.append(String.format("<%s", nodeName));
+        out.append(String.format("<%s", elementName));
         for (Map.Entry<String, String> elem: element.getAttributes().entrySet()) {
             out.append(String.format(" %s = \"%s\"", elem.getKey(), elem.getValue() == null ? "" : elem.getValue()));
         }
@@ -82,13 +84,13 @@ public class ConvertXML extends Converter {
             for (Element sub : element.getSubElements()) {
                 printElement(out, sub);
             }
-            out.append(String.format("</%s>\n", nodeName));
+            out.append(String.format("</%s>\n", elementName));
         } else if (element.getValue() == null) {
             out.append("/>\n");
         } else {
             out.append(">");
             out.append(element.getValue());
-            out.append(String.format("</%s>\n", nodeName));
+            out.append(String.format("</%s>\n", elementName));
         }
         return out;
     }
