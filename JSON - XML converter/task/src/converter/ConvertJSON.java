@@ -15,6 +15,7 @@ public class ConvertJSON extends Converter {
     private static final Pattern PATTERN_EXT_ATTR = Pattern.compile("(?i)^[#@][a-z_][.\\w]*");
     private static final Pattern PATTERN_EXT_IDENT = Pattern.compile("(?i)^[a-z_][.\\w]*");
 
+
     @Override
     protected Element parser(String input) {
         return parsElements(new Finder(input), new Element());

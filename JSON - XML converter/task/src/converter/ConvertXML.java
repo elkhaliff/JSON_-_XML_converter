@@ -9,15 +9,20 @@ public class ConvertXML extends Converter {
     private static final Pattern TAG_OPEN = Pattern.compile("(?is)^\\s*<\\s*([a-z_]\\w+)\\s*([a-z_]\\w+\\s*=\\s*\".*?\")*\\s*(>|/>)");
     private static final Pattern ATTRIBUTES = Pattern.compile("(?is)([a-z_]\\w+)\\s*=\\s*\"(.*?)\"");
 
+    private static final Pattern UNNECESSARY_TAG = Pattern.compile("<\\?[\\s\"\\w-.=]*\\?>");
+
     @Override
     public boolean check(String input) {
-        return XML_BEGIN.matcher(input).find();
+        return XML_BEGIN.matcher(input).find() || UNNECESSARY_TAG.matcher(input).find();
     }
 
     @Override
     protected Element parser(String input) {
         Finder finder = new Finder(input);
         // проверка и пропуск начальных служебных тэгов <?...?>
+        if (finder.check(UNNECESSARY_TAG)) {
+            System.out.println("UNNECESSARY_TAG");
+        }
         return parsElements(finder, new Element());
     }
 
